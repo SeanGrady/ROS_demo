@@ -1,4 +1,4 @@
 float32 time
 geometry_msgs/Twist twist
 ---
-string response
+bool response

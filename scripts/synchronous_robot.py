@@ -2,18 +2,19 @@
 
 import rospy
 from geometry_msgs.msg import Twist
-from sensor_msgs.msg import LaserScan
-from assignment_3.srv import TurnService
+from assignment_3.msg import Lidar
+from assignment_3.srv import TurnService, TurnServiceRequest
+from std_msgs.msg import Bool
 import random
 
 
 class RoombaExplorer():
     def __init__(self):
         rospy.init_node('roomba_explorer')
-        self.lidar_sub = rospy.Subscriber(
-                '/lidar/data',
-                LaserPoints,
-                self.handle_incoming_laser
+        self.collision_sub = rospy.Subscriber(
+                '/lidar/collision',
+                Bool,
+                self.handle_incoming_collision
         )
         self.drive_command_pub = rospy.Publisher(
                 'wheels/commands',
@@ -25,29 +26,20 @@ class RoombaExplorer():
                 TurnService
         )
         self.rate = rospy.Rate(1)
+        self.collision = False
         self.control_loop()
 
-    def handle_incoming_laser(self, message):
-        self.raw_data = message.raw
-        self.point_list = message.point_list
+    def handle_incoming_collision(self, message):
+        self.collision = message.data
 
     def control_loop(self):
         while not rospy.is_shutdown():
-            collsion = self.check_points(point_is_dangerous)
-            if collision:
+            if self.collision:
                 self.turn_random_ammount()
             else:
                 self.drive_forward()
                 self.rate.sleep()
 
-    def point_is_dangerous(self, point):
-        y_buffer = 0.2
-        x_buffer = 0.375
-        return (abs(point[1]) < y_buffer) and (point[2] < x_buffer)
-
-    def check_points(self, expression):
-        hit = any(map(expression, self.point_list))
-        return hit
 
     def turn_random_ammount(self):
         time = random.uniform(0, 1) + 1
@@ -63,7 +55,7 @@ class RoombaExplorer():
 
     def drive_forward(self):
         drive_command = Twist()
-        drive_command.linear.x = 0.3
+        drive_command.linear.x = .5
         self.drive_command_pub.publish(drive_command)
 
 

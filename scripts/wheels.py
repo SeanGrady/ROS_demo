@@ -2,6 +2,7 @@
 
 import rospy
 from geometry_msgs.msg import Twist
+from assignment_3.srv import TurnService, TurnServiceResponse
 
 
 class Wheels():
@@ -19,21 +20,22 @@ class Wheels():
         )
         self.turn_service = rospy.Service(
                 'turn_service',
-                CommandService,
+                TurnService,
                 self.handle_incoming_turn
         )
+        rospy.spin()
 
-    def handle_incoming_command(self, request):
+    def handle_incoming_turn(self, request):
         print "Received request to turn for ", request.time, " seconds."
         self.drive_pub.publish(request.twist)
-        self.sleep(request.time)
+        rospy.sleep(request.time)
         stop_message = Twist()
         self.drive_pub.publish(stop_message)
-        return CommandServiceResponse(True)
+        return TurnServiceResponse(True)
     
     def handle_incoming_drive_command(self, request):
-        print "Received request to drive forwart at ", request.twist.linear.x
-        self.drive_pub.publish(request.twist)
+        print "Received request to drive forwart at ", request.linear.x
+        self.drive_pub.publish(request)
 
 
 if __name__ == "__main__":

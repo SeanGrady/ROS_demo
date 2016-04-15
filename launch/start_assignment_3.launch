@@ -71,8 +71,8 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot_stage)/rviz/robot_navigation.rviz"/>
 
   <!-- **************** Exploration ****************** -->
-  <node name="roomba" pkg="assignment_3" type="roomba.py"/>
-  <node name="lidar" pkg="assignment_3" type="lidar.py"/>
-  <node name="wheels" pkg="assignment_3" type="wheels.py"/>
+  <node name="synchronous_robot" pkg="assignment_3" type="synchronous_robot.py" output="screen"/>
+  <node name="lidar" pkg="assignment_3" type="lidar.py" output="screen"/>
+  <node name="wheels" pkg="assignment_3" type="wheels.py" output="screen"/>
 
 </launch>

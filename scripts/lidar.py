@@ -2,9 +2,9 @@
 
 import rospy
 import math
-import random
 from pprint import pprint
 from sensor_msgs.msg import LaserScan
+from std_msgs.msg import Bool
 
 
 class LaserScanner():
@@ -15,11 +15,17 @@ class LaserScanner():
                 LaserScan,
                 self.handle_incoming_laser
         )
+        self.collision_pub = rospy.Publisher(
+                '/lidar/collision',
+                Bool,
+                queue_size = 10
+        )
         rospy.spin()
 
     def handle_incoming_laser(self, message):
-        point_list = self.process_laser(message)
-        pprint(point_list)
+        self.point_list = self.process_laser(message)
+        collision = self.check_points(self.point_is_dangerous)
+        self.collision_pub.publish(collision)
 
     def process_laser(self, laser_data):
         point_list = []
@@ -36,9 +42,19 @@ class LaserScanner():
 
     def transform_to_point(self, start_angle, angle_increment, index, distance):
         angle = start_angle + (angle_increment * index)
-        x = distancei * math.cos(angle)
+        x = distance * math.cos(angle)
         y = distance * math.sin(angle)
         return x, y
+
+    def point_is_dangerous(self, point):
+        y_buffer = 0.4
+        x_buffer = 1.0
+        return (abs(point[1]) < y_buffer) and (point[2] < x_buffer)
+
+    def check_points(self, expression):
+        hit = any(map(expression, self.point_list))
+        return hit
+
 
 if __name__ == "__main__":
     ls = LaserScanner()
