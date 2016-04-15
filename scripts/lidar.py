@@ -4,6 +4,8 @@ import rospy
 import math
 from pprint import pprint
 from sensor_msgs.msg import LaserScan
+from assignment_3.msg import LogMessage
+from assignment_3.srv import CollisionService
 from std_msgs.msg import Bool
 
 
@@ -11,21 +13,36 @@ class LaserScanner():
     def __init__(self):
         rospy.init_node('laser_scanner')
         self.laser_sub = rospy.Subscriber(
-                "scan",
+                "/repeater/scan",
                 LaserScan,
                 self.handle_incoming_laser
         )
-        self.collision_pub = rospy.Publisher(
-                '/lidar/collision',
-                Bool,
+        self.log_pub = rospy.Publisher(
+                '/lidar/log',
+                LogMessage,
                 queue_size = 10
         )
+        self.collision_srv = rospy.ServiceProxy(
+                'collision_service',
+                CollisionService
+        )
+        self.handling_collision = False
         rospy.spin()
 
     def handle_incoming_laser(self, message):
-        self.point_list = self.process_laser(message)
-        collision = self.check_points(self.point_is_dangerous)
-        self.collision_pub.publish(collision)
+        if not self.handling_collision:
+            self.point_list = self.process_laser(message)
+            collision = self.check_points(self.point_is_dangerous)
+            if collision == True:
+                self.handling_collision = True
+                print "sending collision"
+                response = self.collision_srv(collision)
+                print response.response
+                self.handling_collision = False
+            log_message = LogMessage()
+            log_message.raw_scan = message
+            log_message.collision = collision
+            self.log_pub.publish(log_message)
 
     def process_laser(self, laser_data):
         point_list = []

@@ -3,7 +3,7 @@
 import rospy
 from geometry_msgs.msg import Twist
 from assignment_3.msg import Lidar
-from assignment_3.srv import TurnService, TurnServiceRequest
+from assignment_3.srv import TurnService, TurnServiceRequest, CollisionService
 from std_msgs.msg import Bool
 import random
 
@@ -11,9 +11,9 @@ import random
 class RoombaExplorer():
     def __init__(self):
         rospy.init_node('roomba_explorer')
-        self.collision_sub = rospy.Subscriber(
-                '/lidar/collision',
-                Bool,
+        self.collision_service = rospy.Service(
+                'collision_service',
+                CollisionService,
                 self.handle_incoming_collision
         )
         self.drive_command_pub = rospy.Publisher(
@@ -25,21 +25,16 @@ class RoombaExplorer():
                 'turn_service',
                 TurnService
         )
-        self.rate = rospy.Rate(1)
-        self.collision = False
-        self.control_loop()
+        rospy.sleep(5)
+        self.drive_forward()
+        rospy.spin()
 
-    def handle_incoming_collision(self, message):
-        self.collision = message.data
-
-    def control_loop(self):
-        while not rospy.is_shutdown():
-            if self.collision:
-                self.turn_random_ammount()
-            else:
-                self.drive_forward()
-                self.rate.sleep()
-
+    def handle_incoming_collision(self, request):
+        print "incoming collision"
+        if request.collision == True:
+            self.turn_random_ammount()
+            self.drive_forward()
+        return 'Collision handled.'
 
     def turn_random_ammount(self):
         time = random.uniform(0, 1) + 1
