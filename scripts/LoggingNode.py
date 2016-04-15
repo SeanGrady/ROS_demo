@@ -18,6 +18,7 @@ class Logger():
         if message.collision == True:
             print "Imminent collision!"
             print min(message.raw_scan.ranges)
+            pass
 
 
 if __name__ == '__main__':

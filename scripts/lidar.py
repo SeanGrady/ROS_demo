@@ -26,23 +26,22 @@ class LaserScanner():
                 'collision_service',
                 CollisionService
         )
-        self.handling_collision = False
+        self.previous_collision = False
         rospy.spin()
 
     def handle_incoming_laser(self, message):
-        if not self.handling_collision:
-            self.point_list = self.process_laser(message)
-            collision = self.check_points(self.point_is_dangerous)
+        self.point_list = self.process_laser(message)
+        collision = self.check_points(self.point_is_dangerous)
+        if not self.previous_collision:
             if collision == True:
-                self.handling_collision = True
-                print "sending collision"
+                self.previous_collision = True
                 response = self.collision_srv(collision)
-                print response.response
-                self.handling_collision = False
             log_message = LogMessage()
             log_message.raw_scan = message
             log_message.collision = collision
             self.log_pub.publish(log_message)
+        elif not collision:
+            self.previous_collision = False
 
     def process_laser(self, laser_data):
         point_list = []

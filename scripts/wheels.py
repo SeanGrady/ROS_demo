@@ -35,9 +35,6 @@ class Wheels():
     def handle_incoming_turn(self, request):
         print "Received request to turn for ", request.time, " seconds."
         self.drive_command = request.twist
-        rospy.sleep(request.time)
-        stop_message = Twist()
-        self.drive_command = stop_message
         return TurnServiceResponse(True)
     
     def handle_incoming_drive_command(self, request):

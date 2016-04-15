@@ -30,9 +30,8 @@ class RoombaExplorer():
         rospy.spin()
 
     def handle_incoming_collision(self, request):
-        print "incoming collision"
         if request.collision == True:
-            self.turn_random_ammount()
+            success = self.turn_random_ammount()
             self.drive_forward()
         return 'Collision handled.'
 
@@ -47,6 +46,8 @@ class RoombaExplorer():
         turn_request.twist = drive_command
 
         success = self.turn_requester(turn_request)
+        rospy.sleep(5)
+        return success
 
     def drive_forward(self):
         drive_command = Twist()
