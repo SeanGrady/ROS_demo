@@ -1,0 +1,25 @@
+NOTE: some nodes show up in rqt_graph that, afaik, do not appear in the .launch file. For example, move_base features prominently in the graph but only shows up as an include in the launch file. Is including a .lauch.xml file enough to launch a thing? It looks like it is, the .launch.xml file appears to be an actual launch file. Must be an xml odditiy, not a ROS thing. Oh god this include file has more include files in it D:
+
+This is completely unacceptable, I need a legit graph on a whiteboard for who launches who else.
+
+I think maybe all I need to run this simulation is stageros, move_base, joint_state_publisher/robot_state_publisher, and slam_gmapping. Not entirely sure though. Must read and test.
+
+
+stage_ros stageros:
+    *contains the model of the robot
+    *subscribes to a cmd_vel topic (in our case "mobile_base/commands/velocity")
+    *publishes odom and ground_truth info
+    *does something(?) with tf broadcasting
+    *rqt_graph shows /stageros as publishing to /tf, /base_scan, and /odom
+    *I know it also subscribes to at *least* /clock and a ground_truth topic 
+
+
+joint_state_publisher joint_state_publisher:
+    *publishes the state of joints somehow-I think this means the wheel(?) joints
+    *yes, publishes the 'position', 'velocity' and 'effort' of left_wheel_joint and _right_wheel_joint
+    *rqt_graph shows it publishing to /joint_states (which robot_state_publisher subs
+
+mobile_base_nodelet_manager:
+    *publishes to "mobile_base/commands/velocity-likely the topic responsible for actually moving the robot, since stageros subscribes to it.
+    *listens and publishes to all kinds of other topics which I need to sort out.
+    *NOTE that it also subscribes to mobile_base/commands/velocity, so I'm not sure what publishing to that topic would do...
